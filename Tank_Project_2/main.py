@@ -356,7 +356,7 @@ def game_for_one():
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_SPACE:
                     if tank_1.lives > 0 and tank_1.missiles > 0:
-                        #s.play()
+                        s.play()
                         bullet = tank_1.fire()
                         bullets.append(bullet)
                 if e.key == pygame.K_ESCAPE:
@@ -486,12 +486,12 @@ def game_for_two():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     if tank_1.lives > 0 and tank_1.missiles > 0:
-                        #s.play()
+                        s.play()
                         bullet = tank_1.fire()
                         bullets.append(bullet)
                 if event.key == pygame.K_m:
                     if tank_2.lives > 0 and tank_2.missiles:
-                        #s.play()
+                        s.play()
                         bullet = tank_2.fire()
                         bullets.append(bullet)
                 if event.key == pygame.K_ESCAPE:
@@ -587,7 +587,7 @@ def main_menu():
         if button_arcade.collidepoint((mx, my)):
             screen.blit(one_player_down, button_arcade)
             if click:
-                #b.play()
+                b.play()
                 control_menu_one()
         else:
             screen.blit(one_player_up, button_arcade)
@@ -606,14 +606,14 @@ def main_menu():
                 tank_2.coins = 0
                 tank_2.points = 0
                 tank_2.a = 270
-                #b.play()
+                b.play()
                 game_for_two()
         else:
             screen.blit(two_players_up, button_play_two)
         if button_quit.collidepoint((mx, my)):
             screen.blit(quit_down, button_quit)
             if click:
-                #b.play()
+                b.play()
                 pygame.time.delay(100)
                 pygame.quit()
                 sys.exit()
@@ -644,7 +644,7 @@ def control_menu_one():
                     tank_1.rotsp = 0
                     tank_1.misl = 0
                     enemies.clear()
-                    #b.play()
+                    b.play()
                     game_for_one()
 
         screen.blit(w_button, (250, 200))
@@ -698,21 +698,21 @@ def pause_menu_one():
                 tank_1.rotsp = 0
                 tank_1.misl = 0
                 enemies.clear()
-                #b.play()
+                b.play()
                 game_for_one()
         else:
             screen.blit(retry_up, button_retry)
         if button_continue.collidepoint((mx, my)):
             screen.blit(continue_down, button_continue)
             if click:
-                #b.play()
+                b.play()
                 game_for_one()
         else:
             screen.blit(continue_up, button_continue)
         if button_main_menu.collidepoint((mx, my)):
             screen.blit(main_menu_down, button_main_menu)
             if click:
-                #b.play()
+                b.play()
                 main_menu()
         else:
             screen.blit(main_menu_up, button_main_menu)
@@ -755,21 +755,21 @@ def pause_menu_two():
                 tank_2.coins = 0
                 tank_2.points = 0
                 tank_2.a = 270
-                #b.play()
+                b.play()
                 game_for_two()
         else:
             screen.blit(retry_up, button_retry)
         if button_continue.collidepoint((mx, my)):
             screen.blit(continue_down, button_continue)
             if click:
-                #b.play()
+                b.play()
                 game_for_two()
         else:
             screen.blit(continue_up, button_continue)
         if button_main_menu.collidepoint((mx, my)):
             screen.blit(main_menu_down, button_main_menu)
             if click:
-                #b.play()
+                b.play()
                 main_menu()
         else:
             screen.blit(main_menu_up, button_main_menu)
