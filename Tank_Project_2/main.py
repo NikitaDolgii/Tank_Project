@@ -230,12 +230,11 @@ class Bullet:
         self.y -= self.vy
         self.a = 1
 
-# загрузка звуковых эффектов (временно выключено)
-'''
+# загрузка звуковых эффектов
 s = pygame.mixer.Sound('sfx\\shoot.wav')
 p = pygame.mixer.Sound('sfx/hit.wav')
 b = pygame.mixer.Sound('sfx/button.wav')
-'''
+
 
 # загрузка изображений танков
 green_tank = pygame.transform.scale(pygame.image.load('images/tank_imgs/green_tank.png'), (64, 64))
