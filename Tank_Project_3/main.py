@@ -228,13 +228,11 @@ class Bullet:
                 self.life = 150
                 tank_1.coins += 5
 
-
     def move_1(self):
         self.x += self.vx
         self.y -= self.vy
         self.a = 1
 
-        # АПДЕЙТ 3 Начало
     def move_2(self):
         for i in range(len(wall_vertical_rect)):
             if (wall_vertical_rect[i]).collidepoint(self.rect.center):
@@ -242,27 +240,23 @@ class Bullet:
         for i in range(len(wall_horizontal_rect)):
             if (wall_horizontal_rect[i]).collidepoint(self.rect.center):
                 self.vy *= (-1)
-                # Апдейт 3 конец
         self.x += self.vx
         self.y -= self.vy
         self.a = 1
 
 
-# АПДЕЙТ 1 | 28.11.2023. Начало
 # Первичное создание контура лабиринта
-wall_vertical = pygame.image.load('images/other_imgs/wall_vertical_10x50.png').convert_alpha()
 wall_vertical_rect = []
 for i in range(H // 50 + 2):
     wall_vertical_rect.append(wall_vertical.get_rect(left=0, top=i * 50 + 90))
     wall_vertical_rect.append(wall_vertical.get_rect(right=W, top=i * 50 + 90))
 
-wall_horizontal = pygame.image.load('images/other_imgs/wall_horizontal_50x10.png').convert_alpha()
 wall_horizontal_rect = []
 for i in range(W // 50 + 2):
     wall_horizontal_rect.append(wall_horizontal.get_rect(left=i * 50, top=90))
     wall_horizontal_rect.append(wall_horizontal.get_rect(right=i * 50, bottom=H))
 
-# Карта для двоих (настраивается вручную)
+# Лабиринт для кооперативного режима игры (временная версия, настраивается вручную)
 for i in range(6):
     wall_horizontal_rect.append(wall_horizontal.get_rect(left=50 * i, top=H - 120))
     wall_horizontal_rect.append(wall_horizontal.get_rect(right=W - 50 * i, top=120 + 90))
@@ -272,17 +266,12 @@ for i in range(3):
 for i in range(4):
     wall_vertical_rect.append(wall_vertical.get_rect(left=300, bottom=-250 + H - 120 - 50 * i + 10))
     wall_vertical_rect.append(wall_vertical.get_rect(right=W - 300, top=+250 + 120 + 90 + 50 * i))
-
 for i in range(3):
     wall_horizontal_rect.append(wall_horizontal.get_rect(left=250 - 50 * i, top=H - 120 - 50 * 3 + 10))
     wall_horizontal_rect.append(wall_horizontal.get_rect(left=W - 310 + 50 * i, top=120 + 90 + 150))
-
 for i in range(10):
     wall_vertical_rect.append(wall_vertical.get_rect(left=420, bottom=H - 50 * i + 10))
     wall_vertical_rect.append(wall_vertical.get_rect(right=W - 420, top=120 - 30 + 50 * i))
-
-
-# АПДЕЙТ 1 | 28.11.2023. Конец
 
 
 # загрузка звуковых эффектов
@@ -340,7 +329,8 @@ reload_image = pygame.transform.scale(pygame.image.load('images/other_imgs/reloa
 bullets_image = pygame.transform.scale(pygame.image.load('images/other_imgs/bullets.png'), (80, 16))
 speed_image = pygame.transform.scale(pygame.image.load('images/other_imgs/speed.png'), (52, 16))
 rotation_image = pygame.transform.scale(pygame.image.load('images/other_imgs/rotation.png'), (80, 16))
-
+wall_vertical = pygame.image.load('images/other_imgs/wall_vertical_10x50.png').convert_alpha()
+wall_horizontal = pygame.image.load('images/other_imgs/wall_horizontal_50x10.png').convert_alpha()
 
 # некоторые объекты и функции, необходимые для игрового цикла
 def create_enemy_1():
@@ -590,15 +580,12 @@ def game_for_two():
 
         screen.fill(c_1)
 
-        # АПДЕЙТ 2 | 28.11.2023. Начало
-        # Рисование вертикальных стенок лабиринта
-
+        # Рендер вертикальных и горизонтальных стенок лабиринта
         for i in range(len(wall_vertical_rect)):
             screen.blit(wall_vertical, wall_vertical_rect[i])
-
+            
         for i in range(len(wall_horizontal_rect)):
             screen.blit(wall_horizontal, wall_horizontal_rect[i])
-        # АПДЕЙТ 2 | 28.11.2023. Конец
 
         for bul in bullets:
             if bul.life >= 100:
