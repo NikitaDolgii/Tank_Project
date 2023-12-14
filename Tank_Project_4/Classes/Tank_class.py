@@ -169,9 +169,9 @@ class Tank:
             if self.fire_mode == 3:
                 if self.missiles != 0:
                     self.missiles -= 1
-                    b1, b2, b3 = (class_1(self.x, self.y, self.a-3),
-                                  class_1(self.x, self.y, self.a+3),
-                                  class_1(self.x, self.y, self.a))
+                    b1, b2, b3 = (class_1(self.x, self.y, self.a-3, tank_1, bullet_image),
+                                  class_1(self.x, self.y, self.a+3, tank_1, bullet_image),
+                                  class_1(self.x, self.y, self.a, tank_1, bullet_image))
                     return b1, b2, b3
 
     # Проверка на столкновение с объектом
