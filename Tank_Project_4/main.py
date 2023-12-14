@@ -1,8 +1,18 @@
 import pygame
-from math import *
 import sys
-import random
 
+# Загрузка классов
+from Classes.Tank_class import Tank
+from Classes.Enemy_class import Enemy
+from Classes.Bullet_class import Bullet
+from Classes.Coin_class import Coin
+
+# Загрузка функций
+from Menus.Evolve_menu import evolve_menu
+from Menus.Main_menu import main_menu
+from functions.Display_buttons import display_buttons
+from Menus.Death_menu import death_menu_one, death_menu_two
+from Menus.Pause_control_menu import control_menu_one, control_menu_two, pause_menu_two, pause_menu_one
 
 # Инициализация библиотеки
 pygame.mixer.pre_init(44100, -16, 1, 512)
@@ -19,337 +29,9 @@ c_3 = (247, 255, 247)
 c_4 = (255, 107, 107)
 c_5 = (255, 230, 109)
 
-
 # ФПС и часы для отсчёта времени
 fps = 60
 clock = pygame.time.Clock()
-
-
-# Класс танка (игрока)
-class Tank:
-
-    def __init__(self, x, y, a):
-
-        # Местоположение и угол поворота
-        self.x = x
-        self.y = y
-        self.a = a
-
-        # Местоположение реального центра танка
-        self.rx = 0
-        self.ry = 0
-        self.w = 0
-        self.h = 0
-
-        # Линейная и угловая скорость
-        self.v = 2
-        self.av = 2
-
-        # Кол-во жизней, патронов, монет, очков
-        self.lives = 3
-        self.missiles = 6
-        self.coins = 0
-        self.points = 0
-
-        # Объект типа mask, который совпадает с изображением танка в данный момент
-        self.mask = pygame.mask.from_surface(green_tank)
-
-        # Индикатор независимого времени самого танка
-        self.time = 0
-
-        # Скорость перезарядки, макс. кол-во снарядов и индикаторы "прокачки"
-        self.reload_speed = 1
-        self.max_missiles = 6
-        self.sp = 0
-        self.rotsp = 0
-        self.misl = 0
-        self.reld = 0
-
-        self.img = green_tank
-        self.fire_mode = 1
-        self.shield = 0
-        self.defence = 0
-        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
-
-    # Движение танка вперёд
-    def move_forward(self):
-        if self.lives > 0:
-            if 32 < self.x < 992:
-                self.x += self.v * cos(self.a/57.3)
-            elif self.x < 32:
-                self.x += self.v
-            elif self.x > 992:
-                self.x -= self.v
-            if 32 < self.y < 736:
-                self.y -= self.v*sin(self.a/57.3)
-            elif self.y < 32:
-                self.y += self.v
-            elif self.y > 736:
-                self.y -= self.v
-
-    # Движение танка назад
-    def move_back(self):
-        if self.lives > 0:
-            if 32 < self.x < 992:
-                self.x -= self.v * cos(self.a/57.3)
-            elif self.x < 32:
-                self.x += self.v
-            elif self.x > 992:
-                self.x -= self.v
-            if 32 < self.y < 736:
-                self.y += self.v * sin(self.a/57.3)
-            elif self.y < 32:
-                self.y += self.v
-            elif self.y > 736:
-                self.y -= self.v
-
-    # Поворот танка в пространстве
-    def rotate_r(self):
-        if self.lives > 0:
-            self.a -= self.av
-
-    def rotate_l(self):
-        if self.lives > 0:
-            self.a += self.av
-
-    # Перезарядка патронов
-    def reload(self):
-        self.time += 1
-        if self.time % (240 - self.reld*15) == 0 and self.missiles < self.max_missiles:
-            self.missiles += 1
-        if self.time % 400 == 0 and self.defence == 1 and self.shield < 3:
-            self.shield += 1
-        if self.time == 3600:
-            self.time = 0
-
-    # Отображение картинки танка на экране
-    def render(self):
-        if self.lives > 0:
-            rotated_img = pygame.transform.rotate(self.img, self.a)
-            self.w = rotated_img.get_width() // 2
-            self.h = rotated_img.get_height() // 2
-            self.rx = self.x - self.w
-            self.ry = self.y - self.h
-            self.mask = pygame.mask.from_surface(rotated_img)
-            screen.blit(rotated_img, (self.rx, self.ry))
-            if self.shield == 1:
-                rotated_shield = pygame.transform.rotate(shield_1, self.a)
-                screen.blit(rotated_shield, (self.rx - self.w, self.ry - self.h))
-            if self.shield == 2:
-                rotated_shield = pygame.transform.rotate(shield_2, self.a)
-                screen.blit(rotated_shield, (self.rx - self.w, self.ry - self.h))
-            if self.shield == 3:
-                rotated_shield = pygame.transform.rotate(shield_3, self.a)
-                screen.blit(rotated_shield, (self.rx - self.w, self.ry - self.h))
-
-    # Отображение кол-ва монет и значка монетки на экране в одиночном режиме (координата x зависит от кол-ва монет)
-    def render_coins(self):
-        if self.coins < 10:
-            screen.blit(coin_image, (30, 90))
-        if 10 <= self.coins < 100:
-            screen.blit(coin_image, (55, 90))
-        if 100 <= self.coins < 1000:
-            screen.blit(coin_image, (80, 90))
-        if 1000 <= self.coins < 10000:
-            screen.blit(coin_image, (105, 90))
-        draw_text(str(self.coins), font, c_2, screen, 8, 88)
-
-        draw_text('10', font, c_2, screen, 905, 268)
-
-    # Отображение на экране кол-ва патронов 1-го и 2-го танков (Так как патроны должны отображаться в определённых
-    # частях экрана, эти методы разбиты на отдельные для каждого танка)
-    def render_missiles_tank_1(self):
-        if self.lives > 0:
-            for i in range(self.missiles):
-                screen.blit(missil_image, (i*32, 50))
-
-    def render_missiles_tank_2(self):
-        if self.lives > 0:
-            for i in range(self.missiles):
-                screen.blit(missil_image, (830 + i*32, 50))
-
-    # Аналогично, отображение на экране кол-ва жизней каждого танка
-    def render_hearts_tank_1(self):
-        for i in range(self.lives):
-            screen.blit(heart_image, (5 + i*32, 10))
-
-    def render_shield(self):
-        for i in range(self.shield):
-            screen.blit(shield_image, (101 + i*32, 10))
-
-    def render_hearts_tank_2(self):
-        for i in range(self.lives):
-            screen.blit(heart_image, (930 + i*32, 10))
-
-    # Стрельба (создание и добавление в список нового патрона)
-    def fire(self):
-        if self.lives > 0:
-            if self.fire_mode == 1:
-                if self.missiles != 0:
-                    self.missiles -= 1
-                    bullet = Bullet(self.x, self.y, self.a)
-                    return bullet
-            if self.fire_mode == 3:
-                if self.missiles != 0:
-                    self.missiles -= 1
-                    b1, b2, b3 = (Bullet(self.x, self.y, self.a-3),
-                                  Bullet(self.x, self.y, self.a+3),
-                                  Bullet(self.x, self.y, self.a))
-                    return b1, b2, b3
-
-    # Проверка на столкновение с объектом
-    def hittest(self, obj):
-        if self.mask.overlap(obj.mask, (obj.rx - self.rx, obj.ry - self.ry)):
-            self.lives, obj.lives = 0, 0
-
-    # Отображение кол-ва очков в одиночном режиме
-    def render_points(self):
-        draw_text(str(self.points), font, c_2, screen, 900, 20)
-
-    def set_zero(self, x, y, a):
-        self.x = x
-        self.y = y
-        self.a = a
-        self.rx = 0
-        self.ry = 0
-        self.v = 2
-        self.av = 2
-        self.lives = 3
-        self.missiles = 6
-        self.coins = 0
-        self.points = 0
-        self.mask = pygame.mask.from_surface(green_tank)
-        self.time = 0
-        self.reload_speed = 1
-        self.max_missiles = 6
-        self.sp = 0
-        self.rotsp = 0
-        self.misl = 0
-        self.reld = 0
-        self.img = green_tank
-        self.fire_mode = 1
-        self.shield = 0
-        self.defence = 0
-        bullets.clear()
-        money.clear()
-        enemies.clear()
-
-
-# Класс врагов, атакующих игрока в одиночном режиме
-class Enemy:
-    def __init__(self, img):
-        self.x, self.y = random.choice(
-            [(-50, random.randint(0, H)),
-                (W + 50, random.randint(0, H)),
-                (random.randint(0, W), -50),
-                (random.randint(0, W), H + 50)]
-        )
-        self.a = 1
-        self.v = 2
-        self.vx = self.v * cos(self.a / 57.3)
-        self.vy = self.v * sin(self.a / 57.3)
-        self.img = img
-        self.mask = pygame.mask.from_surface(self.img)
-
-    def render(self):
-        self.mask = pygame.mask.from_surface(self.img)
-        screen.blit(self.img, (self.x, self.y))
-
-    def targetting(self):
-        if tank_1.rx > self.x:
-            self.a = atan(-(tank_1.ry - self.y) / (tank_1.rx - self.x)) * 57.3 + 90
-        elif tank_1.rx < self.x:
-            self.a = atan(-(tank_1.ry - self.y) / (tank_1.rx - self.x)) * 57.3 + 270
-        else:
-            self.a = atan((tank_1.ry - self.y) / (tank_1.rx - self.x + 0.00001)) * 57.3 + 270
-
-    def move(self):
-        self.vx = self.v * sin(self.a / 57.3)
-        self.vy = self.v * cos(self.a / 57.3)
-        self.x += self.vx
-        self.y += self.vy
-
-    def hittest(self):
-        if tank_1.shield > 0:
-            if self.mask.overlap(shield_mask, (tank_1.rx - tank_1.w - self.x, tank_1.ry - tank_1.h - self.y)):
-                tank_1.shield -= 1
-                return True
-        elif self.mask.overlap(tank_1.mask, (tank_1.rx - self.x, tank_1.ry - self.y)):
-            tank_1.lives -= 1
-            return True
-
-
-
-class Coin:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.mask = pygame.mask.from_surface(coin_drop)
-        self.life = 1
-
-    def render(self):
-        if self.life:
-            screen.blit(coin_drop, (self.x, self.y))
-
-    def hittest(self, obj):
-        if self.life:
-            if self.mask.overlap(obj, (tank_1.rx - self.x, tank_1.ry - self.y)):
-                coin_sound.play()
-                tank_1.coins += 5
-                self.life = 0
-
-
-class Bullet:
-    def __init__(self, x, y, a):
-        self.x = x
-        self.y = y
-        self.v = tank_1.v + 10
-        self.a = a
-        self.vx = self.v * cos(self.a/57.3)
-        self.vy = self.v * sin(self.a/57.3)
-        self.mask = pygame.mask.from_surface(bullet_image)
-        self.life = 0
-        self.rect = pygame.Rect(self.x-4, self.y-4, 8, 8)
-
-    def render(self):
-            self.rect = pygame.Rect(self.x, self.y, 3, 3)
-            self.mask = pygame.mask.from_surface(bullet_image)
-            screen.blit(bullet_image, (self.x, self.y))
-            self.life += 1
-
-    def hittest_tank_1(self, obj):
-        if self.mask.overlap(obj, (tank_1.rx - self.x, tank_1.ry - self.y)) and self.life > 3:
-            self.x, self.y = 10000, 10000
-            p.play()
-            tank_1.lives -= 1
-
-    def hittest_tank_2(self, obj):
-        if self.mask.overlap(obj, (tank_2.rx - self.x, tank_2.ry - self.y)) and self.life > 3:
-            self.x, self.y = 10000, 10000
-            p.play()
-            tank_2.lives -= 1
-
-    def hittest_enemy(self):
-        for en in enemies:
-            if self.mask.overlap(en.mask, (en.x - self.x, en.y - self.y)):
-                p.play()
-                coin = Coin(en.x, en.y)
-                money.append(coin)
-                enemies.remove(en)
-                self.life = 150
-
-
-
-    def move_1(self):
-        self.x += self.vx
-        self.y -= self.vy
-        self.a = 1
-
-    def move_2(self):
-        self.x += self.vx
-        self.y -= self.vy
-        self.a = 1
-
 
 # загрузка звуковых эффектов
 s = pygame.mixer.Sound('sfx/shoot.wav')
@@ -358,9 +40,9 @@ b = pygame.mixer.Sound('sfx/button.wav')
 coin_sound = pygame.mixer.Sound('sfx/coin_sound.wav')
 
 # загрузка изображений танков
-green_tank = pygame.transform.scale(pygame.image.load('images/tank_imgs/green_tank.png'), (64, 64))
-brown_tank = pygame.transform.scale(pygame.image.load('images/tank_imgs/brown_tank.png'), (64, 64))
-green_tank_3_bullets = pygame.transform.scale(pygame.image.load('images/tank_imgs/green_tank_3_bullets.png'), (64, 64))
+yellow_tank = pygame.transform.scale(pygame.image.load('images/tank_imgs/yellow_tank.png'), (64, 64))
+red_tank = pygame.transform.scale(pygame.image.load('images/tank_imgs/red_tank.png'), (64, 64))
+yellow_tank_3_bullets = pygame.transform.scale(pygame.image.load('images/tank_imgs/yellow_tank_3_bullets.png'), (64, 64))
 
 # загрузка изображений кнопок главного меню
 one_player_up = pygame.transform.scale(pygame.image.load('images/button_images/1_player_up.png'), (384, 96))
@@ -410,6 +92,7 @@ reload_image = pygame.transform.scale(pygame.image.load('images/other_imgs/reloa
 bullets_image = pygame.transform.scale(pygame.image.load('images/other_imgs/bullets.png'), (80, 16))
 speed_image = pygame.transform.scale(pygame.image.load('images/other_imgs/speed.png'), (52, 16))
 rotation_image = pygame.transform.scale(pygame.image.load('images/other_imgs/rotation.png'), (80, 16))
+boss = pygame.image.load('images/other_imgs/boss.png')
 coin_drop = pygame.image.load('images/other_imgs/coin_drop.png')
 shield_1 = pygame.transform.scale(pygame.image.load('images/other_imgs/shield_1.png'), (128, 128))
 shield_2 = pygame.transform.scale(pygame.image.load('images/other_imgs/shield_2.png'), (128, 128))
@@ -418,70 +101,26 @@ shield_mask = pygame.mask.from_surface(shield_1)
 shield_image = pygame.transform.scale(pygame.image.load('images/other_imgs/shield_image.png'), (32, 32))
 
 
-# некоторые объекты и функции, необходимые для игрового цикла
+# Создание врага 1-го типа в одиночной игре
 def create_enemy_1():
-    enemy_1 = Enemy(enemy_1_image)
+    enemy_1 = Enemy(enemy_1_image, W, H)
     enemies.append(enemy_1)
 
 
+# Создание врага 2-го типа в одиночной игре
 def create_enemy_2():
-    enemy_2 = Enemy(enemy_2_image)
+    enemy_2 = Enemy(enemy_2_image, W, H)
     enemies.append(enemy_2)
 
 
-tank_1 = Tank(100, 400, 90)
-tank_2 = Tank(900, 400, 90)
-tank_1.img = green_tank
-tank_2.img = brown_tank
+# Создание танков для игры
+tank_1 = Tank(100, 400, 90, yellow_tank)
+tank_2 = Tank(900, 400, 90, red_tank)
 
+# Списки, в которых будут храниться объекты классов Bullet, Enemy и Coin
 bullets = []
 enemies = []
 money = []
-
-
-def evolve_menu():
-    ind = True
-    while ind:
-        click = False
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    click = True
-
-
-        button_3_bullets = pygame.Rect(120, 150, 384, 384)
-        button_shield = pygame.Rect(520, 150, 384, 384)
-
-        mx, my = pygame.mouse.get_pos()
-        if button_3_bullets.collidepoint((mx, my)):
-            screen.blit(three_bullets_down, button_3_bullets)
-            if click:
-                b.play()
-                tank_1.img = green_tank_3_bullets
-                tank_1.fire_mode = 3
-                ind = False
-
-        else:
-            screen.blit(three_bullets_up, button_3_bullets)
-        if button_shield.collidepoint((mx, my)):
-            screen.blit(shield_down, button_shield)
-            if click:
-                b.play()
-                tank_1.defence = 1
-                tank_1.shield = 3
-                ind = False
-
-        else:
-            screen.blit(shield_up, button_shield)
-
-        click = False
-
-        clock.tick(fps)
-        pygame.display.update()
 
 
 # игровой цикл для одиночной игры
@@ -498,7 +137,9 @@ def game_for_one():
         t += 1
 
         if t < 600:
+
             draw_text('Get ready! ' + str((600 - t) // 60) + ' s', font, c_2, screen, 400, 50)
+
 
         if 600 < t < 4200:
             draw_text('Wave 1: ' + str((4200 - t) // 60) + ' s', font, c_2, screen, 400, 50)
@@ -508,6 +149,10 @@ def game_for_one():
 
             if t % 300 == 0:
                 create_enemy_1()
+
+        if t == 4200:
+            evolve_menu(screen, clock, fps, three_bullets_down, b, tank_1, yellow_tank_3_bullets,
+                three_bullets_up, shield_down, shield_up)
 
         if 4200 < t < 5100:
             draw_text('Cooldown: ' + str((5100 - t) // 60) + ' s', font, c_2, screen, 400, 50)
@@ -528,7 +173,8 @@ def game_for_one():
             draw_text('Evolution time!', font, c_2, screen, 400, 50)
 
         if t == 8880:
-            evolve_menu()
+            evolve_menu(screen, clock, fps, three_bullets_down, b, tank_1, yellow_tank_3_bullets,
+                        three_bullets_up, shield_down, shield_up)
 
         if 8880 < t < 9780:
             draw_text('Get ready! ' + str((9780 - t) // 60) + ' s', font, c_2, screen, 400, 50)
@@ -555,8 +201,6 @@ def game_for_one():
                 create_enemy_2()
 
 
-
-
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 running = False
@@ -566,16 +210,23 @@ def game_for_one():
                     if tank_1.lives > 0 and tank_1.missiles > 0:
                         if tank_1.fire_mode == 1:
                             s.play()
-                            bullet = tank_1.fire()
+                            bullet = tank_1.fire(Bullet, tank_1, bullet_image)
                             bullets.append(bullet)
                         if tank_1.fire_mode == 3:
                             s.play()
-                            b1, b2, b3 = tank_1.fire()
+                            b1, b2, b3 = tank_1.fire(Bullet, tank_1, bullet_image)
                             bullets.append(b1)
                             bullets.append(b2)
                             bullets.append(b3)
                 if e.key == pygame.K_ESCAPE:
-                    pause_menu_one()
+                    pause_menu_one(screen, c_1, one_player_down, b, control_menu_one, one_player_up, tank_1, game_for_one,
+                                   two_players_down, control_menu_two, yellow_tank, bullets, money, enemies,
+                                   two_players_up, clock, quit_down, quit_up, fps, retry_down, retry_up, continue_down,
+                                   continue_up, main_menu_down, main_menu, main_menu_up, tank_2,
+                                   red_tank, game_for_two, q_button,
+                                   w_button, a_button, s_button, d_button, space, draw_text, font, c_2,
+                                   up_button, left_button,
+                                   down_button, right_button, m_button)
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if e.button == 1:
                     click = True
@@ -591,124 +242,43 @@ def game_for_one():
             tank_1.move_back()
 
         tank_1.reload()
-        tank_1.render_coins()
-        tank_1.render_shield()
+        tank_1.render_coins(screen, coin_image, c_2, font, draw_text)
 
         for m in money:
-            m.render()
-            m.hittest(tank_1.mask)
+            m.render(screen, coin_drop)
+            m.hittest(tank_1.mask, tank_1, coin_sound)
 
         for enemy in enemies:
-            if enemy.hittest():
+            if enemy.hittest(tank_1, shield_mask):
                 p.play()
                 enemies.remove(enemy)
-            enemy.targetting()
-            enemy.render()
+            enemy.targetting(tank_1)
+            enemy.render(screen)
             enemy.move()
 
 
         for bul in bullets:
             if bul.life >= 100:
                 bullets.remove(bul)
-            bul.hittest_enemy()
-            bul.move_1()
-            bul.render()
-            bul.hittest_tank_1(tank_1.mask)
+            bul.hittest_enemy(enemies, p, Coin, money, coin_drop)
+            bul.move()
+            bul.render(screen, bullet_image)
+            bul.hittest_tank_1(tank_1.mask, tank_1, p)
 
-        tank_1.render_hearts_tank_1()
-        tank_1.render_missiles_tank_1()
-        tank_1.render_points()
-        tank_1.render()
+        tank_1.render_hearts_tank_1(screen, heart_image)
+        tank_1.render_missiles_tank_1(screen, missil_image)
+        tank_1.render_points(draw_text, font, c_2, screen)
+        tank_1.render(screen, shield_1, shield_2, shield_3)
+        tank_1.render_shield(screen, shield_image)
 
-
-        #########################################################################
-
-        button_upgrade_speed = pygame.Rect(860, 80, 32, 32)
-        button_upgrade_rotation_speed = pygame.Rect(860, 130, 32, 32)
-        button_upgrade_missiles = pygame.Rect(860, 180, 32, 32)
-        button_upgrade_reload = pygame.Rect(860, 230, 32, 32)
-
-        mx, my = pygame.mouse.get_pos()
-
-        screen.blit(
-            pygame.transform.scale(pygame.image.load('images/scale_imgs/scale_' + str(tank_1.sp) + '.png'), (96, 32)),
-            (900, 80)
-        )
-        screen.blit(
-            pygame.transform.scale(pygame.image.load('images/scale_imgs/scale_' + str(tank_1.rotsp) + '.png'),
-                                   (96, 32)),
-            (900, 130)
-        )
-        screen.blit(
-            pygame.transform.scale(pygame.image.load('images/scale_imgs/scale_' + str(tank_1.misl) + '.png'), (96, 32)),
-            (900, 180)
-        )
-        screen.blit(
-            pygame.transform.scale(pygame.image.load('images/scale_imgs/scale_' + str(tank_1.reld) + '.png'), (96, 32)),
-            (900, 230)
-        )
-
-        screen.blit(speed_image, pygame.Rect(900, 64, 52, 8))
-        screen.blit(rotation_image, pygame.Rect(896, 114, 80, 8))
-        screen.blit(bullets_image, pygame.Rect(891, 164, 80, 8))
-        screen.blit(reload_image, pygame.Rect(891, 214, 80, 8))
-        screen.blit(coin_image, pygame.Rect(950, 270, 32, 32))
-
-        if tank_1.coins >= 10:
-            if button_upgrade_speed.collidepoint((mx, my)):
-                screen.blit(upgrade_down, button_upgrade_speed)
-                if click:
-                    if tank_1.sp < 10:
-                        b.play()
-                        tank_1.v += 0.5
-                        tank_1.coins -= 10
-                        tank_1.sp += 1
-            else:
-                screen.blit(upgrade_up, button_upgrade_speed)
-
-        if tank_1.coins >= 10:
-            if button_upgrade_rotation_speed.collidepoint((mx, my)):
-                screen.blit(upgrade_down, button_upgrade_rotation_speed)
-                if click:
-                    if tank_1.rotsp < 10:
-                        b.play()
-                        tank_1.av += 0.2
-                        tank_1.coins -= 10
-                        tank_1.rotsp += 1
-            else:
-                screen.blit(upgrade_up, button_upgrade_rotation_speed)
-
-        if tank_1.coins >= 10:
-            if button_upgrade_missiles.collidepoint((mx, my)):
-                screen.blit(upgrade_down, button_upgrade_missiles)
-                if click:
-                    if tank_1.misl < 10:
-                        b.play()
-                        tank_1.max_missiles += 1
-                        tank_1.coins -= 10
-                        tank_1.misl += 1
-            else:
-                screen.blit(upgrade_up, button_upgrade_missiles)
-
-            if tank_1.coins >= 10:
-                if button_upgrade_reload.collidepoint((mx, my)):
-                    screen.blit(upgrade_down, button_upgrade_reload)
-                    if click:
-                        if tank_1.reld < 10:
-                            b.play()
-                            tank_1.reload_speed += 0.5
-                            tank_1.coins -= 10
-                            tank_1.reld += 1
-                else:
-                    screen.blit(upgrade_up, button_upgrade_reload)
-
-            click = False
-
-        ####################################################################
+        display_buttons(screen, tank_1, speed_image, rotation_image, bullets_image, reload_image, coin_image, upgrade_down,
+                    click, b, upgrade_up)
 
         if tank_1.lives == 0:
             running = False
-            death_menu_one()
+            death_menu_one(screen, c_5, draw_text, tank_1, font, c_2, retry_down, retry_up,  yellow_tank, bullets, money,
+                   enemies, c_1, one_player_down, b, control_menu_one, one_player_up, two_players_down, control_menu_two,
+                   two_players_up, clock, quit_down, quit_up, fps, game_for_one, main_menu_down, main_menu, main_menu_up)
 
 
 
@@ -716,7 +286,7 @@ def game_for_one():
         pygame.display.update()
 
 
-# игровой цикл 1 на 1
+# игровой цикл для кооперативного режима
 def game_for_two():
     running = True
     while running:
@@ -728,15 +298,21 @@ def game_for_two():
                 if event.key == pygame.K_q:
                     if tank_1.lives > 0 and tank_1.missiles > 0:
                         s.play()
-                        bullet = tank_1.fire()
+                        bullet = tank_1.fire(Bullet, tank_1, bullet_image)
                         bullets.append(bullet)
                 if event.key == pygame.K_m:
                     if tank_2.lives > 0 and tank_2.missiles:
                         s.play()
-                        bullet = tank_2.fire()
+                        bullet = tank_2.fire(Bullet, tank_1, bullet_image)
                         bullets.append(bullet)
                 if event.key == pygame.K_ESCAPE:
-                    pause_menu_two()
+                    pause_menu_two(screen, c_1, one_player_down, b, control_menu_one, one_player_up, tank_1,
+                                   two_players_down, control_menu_two, yellow_tank, bullets, money, enemies,
+                                   two_players_up, clock, quit_down, quit_up, fps, retry_down, retry_up, continue_down,
+                                   continue_up, main_menu_down, main_menu, main_menu_up, tank_2, red_tank, game_for_two, q_button, game_for_one,
+                                   w_button, a_button, s_button, d_button, space, draw_text, font, c_2,
+                                   up_button, left_button,
+                                   down_button, right_button, m_button)
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_d]:
@@ -761,27 +337,33 @@ def game_for_two():
         for bul in bullets:
             if bul.life >= 100:
                 bullets.remove(bul)
-            bul.move_2()
-            bul.render()
-            bul.hittest_tank_1(tank_1.mask)
-            bul.hittest_tank_2(tank_2.mask)
+            bul.move()
+            bul.render(screen, bullet_image)
+            bul.hittest_tank_1(tank_1.mask, tank_1, p)
+            bul.hittest_tank_2(tank_2.mask, tank_2, p)
 
-        tank_1.render()
-        tank_2.render()
+        tank_1.render(screen, shield_1, shield_2, shield_3)
+        tank_2.render(screen, shield_1, shield_2, shield_3)
         tank_1.reload()
         tank_2.reload()
-        tank_1.render_hearts_tank_1()
-        tank_2.render_hearts_tank_2()
-        tank_1.render_missiles_tank_1()
-        tank_2.render_missiles_tank_2()
+        tank_1.render_hearts_tank_1(screen, heart_image)
+        tank_2.render_hearts_tank_2(screen, heart_image)
+        tank_1.render_missiles_tank_1(screen, missil_image)
+        tank_2.render_missiles_tank_2(screen, missil_image)
         tank_1.hittest(tank_2)
 
         if tank_1.lives == 0:
             running = False
-            death_menu_two()
+            death_menu_two(screen, c_5, tank_1, retry_down, retry_up,  yellow_tank, bullets, money,
+                           enemies, c_1, one_player_down, b, control_menu_one, one_player_up, two_players_down, control_menu_two,
+                           two_players_up, clock, quit_down, quit_up, fps, main_menu_down, main_menu, main_menu_up,
+                           tank_2, red_tank, game_for_two)
         if tank_2.lives == 0:
             running = False
-            death_menu_two()
+            death_menu_two(screen, c_5, tank_1, retry_down, retry_up,  yellow_tank, bullets, money,
+                           enemies, c_1, one_player_down, b, control_menu_one, one_player_up, two_players_down, control_menu_two,
+                           two_players_up, clock, quit_down, quit_up, fps, main_menu_down, main_menu, main_menu_up,
+                           tank_2, red_tank, game_for_two)
 
         clock.tick(fps)
         pygame.display.update()
@@ -798,302 +380,10 @@ def draw_text(text, font, color, surface, x, y):
     surface.blit(text_obj, text_rect)
 
 
-# главное меню
-def main_menu():
 
-    while True:
-        screen.fill(c_1)
-        click = False
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    click = True
-
-
-        button_arcade = pygame.Rect(50, 100, 384, 96)
-        button_play_two = pygame.Rect(50, 250, 384, 96)
-        button_quit = pygame.Rect(50, 400, 384, 96)
-
-        mx, my = pygame.mouse.get_pos()
-        if button_arcade.collidepoint((mx, my)):
-            screen.blit(one_player_down, button_arcade)
-            if click:
-                b.play()
-                control_menu_one()
-        else:
-            screen.blit(one_player_up, button_arcade)
-        if button_play_two.collidepoint((mx, my)):
-            screen.blit(two_players_down, button_play_two)
-            if click:
-                b.play()
-                control_menu_two()
-        else:
-            screen.blit(two_players_up, button_play_two)
-        if button_quit.collidepoint((mx, my)):
-            screen.blit(quit_down, button_quit)
-            if click:
-                b.play()
-                pygame.time.delay(100)
-                pygame.quit()
-                sys.exit()
-        else:
-            screen.blit(quit_up, button_quit)
-
-        clock.tick(fps)
-        pygame.display.update()
-
-
-def control_menu_one():
-    while True:
-        screen.fill(c_1)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    tank_1.set_zero(500, 400, 90)
-                    tank_1.img = green_tank
-                    b.play()
-                    game_for_one()
-
-        screen.blit(w_button, (250, 200))
-        screen.blit(a_button, (100, 350))
-        screen.blit(s_button, (250, 350))
-        screen.blit(d_button, (400, 350))
-        screen.blit(space, (400, 500))
-
-        draw_text('W - move forward', font, c_2, screen, 600, 200)
-        draw_text('S - move back', font, c_2, screen, 600, 250)
-        draw_text('A, D - rotate', font, c_2, screen, 600, 300)
-        draw_text('Space - shoot', font, c_2, screen, 600, 350)
-        draw_text('Escape - pause', font, c_2, screen, 600, 400)
-        draw_text('Press to start', font, c_2, screen, 470, 620)
-
-        clock.tick(fps)
-        pygame.display.update()
-
-
-def control_menu_two():
-    while True:
-        screen.fill(c_1)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    tank_1.set_zero(50, 700, 90)
-                    tank_2.set_zero(900, 150, 270)
-                    tank_1.img = green_tank
-                    tank_2.img = brown_tank
-                    b.play()
-                    game_for_two()
-
-        screen.blit(w_button, (190, 100))
-        screen.blit(a_button, (40, 250))
-        screen.blit(s_button, (190, 250))
-        screen.blit(d_button, (340, 250))
-        screen.blit(q_button, (190, 400))
-
-        screen.blit(up_button, (750, 100))
-        screen.blit(left_button, (600, 250))
-        screen.blit(down_button, (750, 250))
-        screen.blit(right_button, (900, 250))
-        screen.blit(m_button, (750, 400))
-
-        draw_text('1st Player', font, c_2, screen, 150, 50)
-        draw_text('2nd Player', font, c_2, screen, 700, 50)
-        screen.blit(space, (320, 550))
-        draw_text('Press to start', font, c_2, screen, 400, 660)
-
-        clock.tick(fps)
-        pygame.display.update()
-
-
-# меню паузы для одного игрока
-def pause_menu_one():
-    while True:
-
-        screen.fill(c_1)
-
-        click = False
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    click = True
-
-        button_retry = pygame.Rect(340, 350, 384, 96)
-        button_continue = pygame.Rect(340, 200, 384, 96)
-        button_main_menu = pygame.Rect(340, 500, 384, 96)
-
-        mx, my = pygame.mouse.get_pos()
-        if button_retry.collidepoint((mx, my)):
-            screen.blit(retry_down, button_retry)
-            if click:
-                tank_1.set_zero(500, 400, 90)
-                tank_1.img = green_tank
-                b.play()
-                game_for_one()
-        else:
-            screen.blit(retry_up, button_retry)
-        if button_continue.collidepoint((mx, my)):
-            screen.blit(continue_down, button_continue)
-            if click:
-                b.play()
-                game_for_one()
-        else:
-            screen.blit(continue_up, button_continue)
-        if button_main_menu.collidepoint((mx, my)):
-            screen.blit(main_menu_down, button_main_menu)
-            if click:
-                b.play()
-                main_menu()
-        else:
-            screen.blit(main_menu_up, button_main_menu)
-
-        clock.tick(fps)
-        pygame.display.update()
-
-
-def pause_menu_two():
-    while True:
-
-        screen.fill(c_1)
-
-        click = False
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    click = True
-
-        button_retry = pygame.Rect(340, 350, 384, 96)
-        button_continue = pygame.Rect(340, 200, 384, 96)
-        button_main_menu = pygame.Rect(340, 500, 384, 96)
-
-        mx, my = pygame.mouse.get_pos()
-        if button_retry.collidepoint((mx, my)):
-            screen.blit(retry_down, button_retry)
-            if click:
-                tank_1.set_zero(50, 700, 90)
-                tank_2.set_zero(900, 150, 270)
-                tank_1.img = green_tank
-                tank_2.img = brown_tank
-                b.play()
-                game_for_two()
-        else:
-            screen.blit(retry_up, button_retry)
-        if button_continue.collidepoint((mx, my)):
-            screen.blit(continue_down, button_continue)
-            if click:
-                b.play()
-                game_for_two()
-        else:
-            screen.blit(continue_up, button_continue)
-        if button_main_menu.collidepoint((mx, my)):
-            screen.blit(main_menu_down, button_main_menu)
-            if click:
-                b.play()
-                main_menu()
-        else:
-            screen.blit(main_menu_up, button_main_menu)
-
-        clock.tick(fps)
-        pygame.display.update()
-
-
-# меню смерти для одного игрока
-def death_menu_one():
-    while True:
-        screen.fill(c_5)
-        draw_text("You've got " + str(tank_1.points + tank_1.coins) + " points!", font, c_2, screen, 340, 100)
-        click = False
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    click = True
-
-        button_retry = pygame.Rect(340, 200, 384, 96)
-        button_main_menu = pygame.Rect(340, 350, 384, 96)
-
-        mx, my = pygame.mouse.get_pos()
-        if button_retry.collidepoint((mx, my)):
-            screen.blit(retry_down, button_retry)
-            if click:
-                tank_1.set_zero(500, 400, 90)
-                tank_1.img = green_tank
-                b.play()
-                game_for_one()
-        else:
-            screen.blit(retry_up, button_retry)
-        if button_main_menu.collidepoint((mx, my)):
-            screen.blit(main_menu_down, button_main_menu)
-            if click:
-                b.play()
-                main_menu()
-        else:
-            screen.blit(main_menu_up, button_main_menu)
-        clock.tick(fps)
-        pygame.display.update()
-
-
-# меню смерти для двух игроков
-def death_menu_two():
-    while True:
-        screen.fill(c_5)
-        click = False
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    click = True
-
-        button_retry = pygame.Rect(340, 200, 384, 96)
-        button_main_menu = pygame.Rect(340, 350, 384, 96)
-
-        mx, my = pygame.mouse.get_pos()
-        if button_retry.collidepoint((mx, my)):
-            screen.blit(retry_down, button_retry)
-            if click:
-                tank_1.set_zero(50, 700, 90)
-                tank_2.set_zero(900, 150, 270)
-                tank_1.img = green_tank
-                tank_2.img = brown_tank
-                b.play()
-                game_for_two()
-        else:
-            screen.blit(retry_up, button_retry)
-        if button_main_menu.collidepoint((mx, my)):
-            screen.blit(main_menu_down, button_main_menu)
-            if click:
-                b.play()
-                main_menu()
-        else:
-            screen.blit(main_menu_up, button_main_menu)
-
-        clock.tick(fps)
-        pygame.display.update()
-
-
-main_menu()
+main_menu(screen, c_1, one_player_down, b, control_menu_one, one_player_up, two_players_down, control_menu_two,
+              two_players_up,  clock, quit_down, quit_up, fps, tank_1, yellow_tank, bullets, money, enemies, tank_2,
+              red_tank, game_for_two, q_button, game_for_one,
+              w_button, a_button, s_button, d_button, space, draw_text, font, c_2,
+              up_button, left_button,
+              down_button, right_button, m_button)
