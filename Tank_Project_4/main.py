@@ -230,6 +230,8 @@ def game_for_one():
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if e.button == 1:
                     click = True
+            else:
+                click = False
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_d]:
