@@ -132,6 +132,7 @@ def game_for_one():
     running = True
     while running:
 
+
         screen.fill(c_1)
 
         t += 1
@@ -165,6 +166,7 @@ def game_for_one():
 
             if t % 450 == 0:
                 create_enemy_1()
+                create_enemy_2()
 
             if t % 600 == 0:
                 create_enemy_2()
