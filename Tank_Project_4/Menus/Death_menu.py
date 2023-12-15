@@ -47,7 +47,10 @@ def death_menu_one(screen, c_5, draw_text, tank_1, font, c_2, retry_down, retry_
 def death_menu_two(screen, c_5, tank_1, retry_down, retry_up,  yellow_tank, bullets, money,
                    enemies, c_1, one_player_down, b, control_menu_one, one_player_up, two_players_down, control_menu_two,
                    two_players_up, clock, quit_down, quit_up, fps, main_menu_down, main_menu, main_menu_up,
-                   tank_2, red_tank, game_for_two):
+                   tank_2, red_tank, game_for_two, q_button, game_for_one,
+              w_button, a_button, s_button, d_button, space, draw_text, font, c_2,
+              up_button, left_button,
+              down_button, right_button, m_button):
     while True:
         screen.fill(c_5)
         click = False
@@ -77,10 +80,12 @@ def death_menu_two(screen, c_5, tank_1, retry_down, retry_up,  yellow_tank, bull
             screen.blit(main_menu_down, button_main_menu)
             if click:
                 b.play()
-                main_menu(screen, c_1, one_player_down, b, control_menu_one,
-                          one_player_up, two_players_down, control_menu_two,
-                          two_players_up,
-                          clock, quit_down, quit_up, fps)
+                main_menu(screen, c_1, one_player_down, b, control_menu_one, one_player_up, two_players_down, control_menu_two,
+              two_players_up,  clock, quit_down, quit_up, fps, tank_1, yellow_tank, bullets, money, enemies, tank_2,
+              red_tank, game_for_two, q_button, game_for_one,
+              w_button, a_button, s_button, d_button, space, draw_text, font, c_2,
+              up_button, left_button,
+              down_button, right_button, m_button)
         else:
             screen.blit(main_menu_up, button_main_menu)
 
