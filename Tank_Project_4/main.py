@@ -357,15 +357,21 @@ def game_for_two():
         if tank_1.lives == 0:
             running = False
             death_menu_two(screen, c_5, tank_1, retry_down, retry_up,  yellow_tank, bullets, money,
-                           enemies, c_1, one_player_down, b, control_menu_one, one_player_up, two_players_down, control_menu_two,
-                           two_players_up, clock, quit_down, quit_up, fps, main_menu_down, main_menu, main_menu_up,
-                           tank_2, red_tank, game_for_two)
+                   enemies, c_1, one_player_down, b, control_menu_one, one_player_up, two_players_down, control_menu_two,
+                   two_players_up, clock, quit_down, quit_up, fps, main_menu_down, main_menu, main_menu_up,
+                   tank_2, red_tank, game_for_two, q_button, game_for_one,
+              w_button, a_button, s_button, d_button, space, draw_text, font, c_2,
+              up_button, left_button,
+              down_button, right_button, m_button)
         if tank_2.lives == 0:
             running = False
             death_menu_two(screen, c_5, tank_1, retry_down, retry_up,  yellow_tank, bullets, money,
-                           enemies, c_1, one_player_down, b, control_menu_one, one_player_up, two_players_down, control_menu_two,
-                           two_players_up, clock, quit_down, quit_up, fps, main_menu_down, main_menu, main_menu_up,
-                           tank_2, red_tank, game_for_two)
+                   enemies, c_1, one_player_down, b, control_menu_one, one_player_up, two_players_down, control_menu_two,
+                   two_players_up, clock, quit_down, quit_up, fps, main_menu_down, main_menu, main_menu_up,
+                   tank_2, red_tank, game_for_two, q_button, game_for_one,
+              w_button, a_button, s_button, d_button, space, draw_text, font, c_2,
+              up_button, left_button,
+              down_button, right_button, m_button)
 
         clock.tick(fps)
         pygame.display.update()
